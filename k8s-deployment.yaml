@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: hello-deploy
+  labels:
+    app: hello
 spec:
   replicas: 1
   selector:
@@ -10,10 +12,10 @@ spec:
   template:
     metadata:
       labels:
-        app: hello
+        app: hello   # ✅ Fixed label
     spec:
       containers:
-      - name: hello-container
+      - name: hello
         image: dockwithvamsee/hello-k8s:1.0
         ports:
         - containerPort: 5000
@@ -23,10 +25,10 @@ kind: Service
 metadata:
   name: hello-service
 spec:
-  type: NodePort
   selector:
     app: hello
   ports:
-  - port: 80
+  - protocol: TCP
+    port: 5000
     targetPort: 5000
-    nodePort: 30001
+  type: ClusterIP

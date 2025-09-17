@@ -17,7 +17,7 @@ jobs:
       - name: Build Docker image
         id: set-image
         run: |
-          IMAGE_NAME=<DOCKER_USERNAME>/hello-k8s:1.0
+          IMAGE_NAME=dockwithvamsee/hello-k8s:1.0  # ✅ Replace with your DockerHub username
           docker build -t $IMAGE_NAME ./app
           echo "image=$IMAGE_NAME" >> $GITHUB_OUTPUT
 
