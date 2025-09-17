@@ -51,8 +51,7 @@ jobs:
 
       # Step 3: Load Docker image into kind
       - name: Load Docker image into kind
-        run: |
-          kind load docker-image ${{ steps.set-image.outputs.image }}
+        run: kind load docker-image ${{ needs.build.outputs.image }}
 
       # Step 4: Setup kubectl
       - name: Set up kubectl
