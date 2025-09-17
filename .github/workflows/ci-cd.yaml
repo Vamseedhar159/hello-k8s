@@ -41,7 +41,7 @@ jobs:
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
         with:
-          version: '1.26.0'
+          version: 'v1.27.3'
 
       - name: Deploy to test namespace
         run: |
