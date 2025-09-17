@@ -45,9 +45,9 @@ jobs:
           chmod +x ./kind
           sudo mv ./kind /usr/local/bin/kind
 
-      # Step 2: Create kind cluster
+      # Step 2: Create default kind cluster
       - name: Create kind cluster
-        run: kind create cluster --name test-cluster
+        run: kind create cluster  # default name 'kind' used
 
       # Step 3: Docker login & pull image from DockerHub
       - name: Docker login
