@@ -38,20 +38,18 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # Step 1: Setup kind cluster
-      - name: Set up kind cluster
-        uses: engineerd/setup-kind@v0.10.0
-        with:
-          version: v0.20.0
+      # Step 1: Setup Kind cluster
+      - name: Set up Kind
+        uses: engineerd/setup-kind@v0.11.0
 
-      # Step 2: Load Docker image into kind
-      - name: Load Docker image into kind
+      # Step 2: Load Docker image into Kind
+      - name: Load Docker image into Kind
         run: |
           kind load docker-image ${{ steps.set-image.outputs.image }}
 
-      # Step 3: Set up kubectl
+      # Step 3: Setup kubectl
       - name: Set up kubectl
-        uses: kubernetes-actions/setup-kubectl@v3
+        uses: azure/setup-kubectl@v3
         with:
           version: 'v1.27.3'
 
@@ -82,6 +80,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # For demo purpose, we can skip deploy OR just print message
+      # Demo deploy step
       - name: Deploy to production
-        run: echo "Smoke test passed, deploy step would go here"
+        run: echo "Smoke test passed → deploy step would go here"
