@@ -38,29 +38,36 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # Step 1: Setup Kind cluster
-      - name: Set up Kind
-        uses: engineerd/setup-kind@v0.11.0
+      # Step 1: Install kind manually
+      - name: Install kind
+        run: |
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
+          chmod +x ./kind
+          sudo mv ./kind /usr/local/bin/kind
 
-      # Step 2: Load Docker image into Kind
-      - name: Load Docker image into Kind
+      # Step 2: Create kind cluster
+      - name: Create kind cluster
+        run: kind create cluster --name test-cluster
+
+      # Step 3: Load Docker image into kind
+      - name: Load Docker image into kind
         run: |
           kind load docker-image ${{ steps.set-image.outputs.image }}
 
-      # Step 3: Setup kubectl
+      # Step 4: Setup kubectl
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
         with:
           version: 'v1.27.3'
 
-      # Step 4: Deploy to test namespace
+      # Step 5: Deploy to test namespace
       - name: Deploy to test namespace
         run: |
           kubectl create ns test --dry-run=client -o yaml | kubectl apply -f -
           kubectl apply -f k8s-deployment.yaml -n test
           kubectl wait --for=condition=ready pod -l app=hello -n test --timeout=60s
 
-      # Step 5: Smoke Test
+      # Step 6: Smoke Test
       - name: Smoke Test
         run: |
           POD_NAME=$(kubectl get pod -l app=hello -n test -o jsonpath='{.items[0].metadata.name}')
