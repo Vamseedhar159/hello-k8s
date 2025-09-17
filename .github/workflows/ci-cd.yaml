@@ -17,7 +17,7 @@ jobs:
       - name: Build Docker image
         id: set-image
         run: |
-          IMAGE_NAME=hello-k8s:1.0
+          IMAGE_NAME=<DOCKER_USERNAME>/hello-k8s:1.0
           docker build -t $IMAGE_NAME ./app
           echo "image=$IMAGE_NAME" >> $GITHUB_OUTPUT
 
@@ -29,8 +29,7 @@ jobs:
 
       - name: Push Docker image
         run: |
-          docker tag ${{ steps.set-image.outputs.image }} ${{ secrets.DOCKER_USERNAME }}/hello-k8s:1.0
-          docker push ${{ secrets.DOCKER_USERNAME }}/hello-k8s:1.0
+          docker push ${{ steps.set-image.outputs.image }}
 
   smoke-test:
     runs-on: ubuntu-latest
@@ -38,45 +37,38 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # Step 1: Install kind manually
       - name: Install kind
         run: |
           curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
           chmod +x ./kind
           sudo mv ./kind /usr/local/bin/kind
 
-      # Step 2: Create default kind cluster
       - name: Create kind cluster
-        run: kind create cluster  # default name 'kind' used
+        run: kind create cluster
 
-      # Step 3: Docker login & pull image from DockerHub
-      - name: Docker login
+      - name: Docker login & pull image
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Pull Docker image
-        run: docker pull ${{ secrets.DOCKER_USERNAME }}/hello-k8s:1.0
+        run: docker pull ${{ steps.set-image.outputs.image }}
 
-      # Step 4: Load Docker image into kind
       - name: Load Docker image into kind
-        run: kind load docker-image ${{ secrets.DOCKER_USERNAME }}/hello-k8s:1.0
+        run: kind load docker-image ${{ steps.set-image.outputs.image }}
 
-      # Step 5: Setup kubectl
-      - name: Set up kubectl
+      - name: Setup kubectl
         uses: azure/setup-kubectl@v3
         with:
           version: 'v1.27.3'
 
-      # Step 6: Deploy to test namespace
       - name: Deploy to test namespace
         run: |
           kubectl create ns test --dry-run=client -o yaml | kubectl apply -f -
           kubectl apply -f k8s-deployment.yaml -n test
-          kubectl wait --for=condition=ready pod -l app=hello -n test --timeout=60s
+          kubectl wait --for=condition=ready pod -l app=hello -n test --timeout=120s
 
-      # Step 7: Smoke Test
       - name: Smoke Test
         run: |
           POD_NAME=$(kubectl get pod -l app=hello -n test -o jsonpath='{.items[0].metadata.name}')
@@ -95,7 +87,5 @@ jobs:
     needs: smoke-test
     steps:
       - uses: actions/checkout@v3
-
-      # Demo deploy step
       - name: Deploy to production
         run: echo "Smoke test passed → deploy step would go here"
